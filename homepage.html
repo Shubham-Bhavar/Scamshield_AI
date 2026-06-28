@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScamShield AI - Ad & Link Fraud Detector</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Styles.css">
+</head>
+
+<body>
+<header class="navbar">
+  <div class="nav-container">
+    <div class="logo">🛡️ ScamShield <span class="accent-text">AI</span></div>
+    <div class="nav-right">
+      <div class="hackathon-badge" id="poweredBadge">Anakin Blitz V2</div>
+      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark mode">
+        <span id="themeIcon">☀️</span>
+      </button>
+      <div style="position:relative;">
+        <button class="dots-btn" id="dotsBtn" aria-label="Open menu" onclick="toggleDropdown()">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </button>
+        <div class="dropdown-menu" id="dropdownMenu">
+          <button class="dropdown-item" onclick="openDashboard()"><i class="fa-solid fa-chart-bar"></i> Open dashboard</button>
+          <button class="dropdown-item" onclick="toggleHowItWorks()"><i class="fa-solid fa-circle-info"></i> How it works</button>
+          <button class="dropdown-item" onclick="toggleFooter()"><i class="fa-solid fa-book-open"></i> User guide</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="dashboard-panel" id="dashboardPanel">
+  <div class="dash-header">
+    <div class="dash-title"><i class="fa-solid fa-chart-bar"></i> Your scan dashboard</div>
+    <button class="dash-close" onclick="closeDashboard()"><i class="fa-solid fa-xmark"></i> Close</button>
+  </div>
+  <div class="dash-stats">
+    <div class="dash-stat"><div class="dash-stat-val cyan" id="statTotal">0</div><div class="dash-stat-label">Total scans</div></div>
+    <div class="dash-stat"><div class="dash-stat-val red" id="statThreats">0</div><div class="dash-stat-label">Threats blocked</div></div>
+    <div class="dash-stat"><div class="dash-stat-val green" id="statSafe">0</div><div class="dash-stat-label">Verified safe</div></div>
+  </div>
+  <div class="dash-section-label">Recent scan history</div>
+  <div class="history-list" id="historyList">
+    <div class="empty-history"><i class="fa-solid fa-shield-halved"></i>No scans yet — paste a link above to get started.</div>
+  </div>
+</div>
+
+<main class="main-container">
+
+  <section class="hero-section">
+    <h1 class="hero-title">Stop sponsored ad scams instantly.</h1>
+    <p class="hero-subtitle" style="text-align:center;">Paste a social media ad URL, domain, or suspicious ad copy. <span style="color:var(--accent-cyan);font-weight:600;">Anakin Universal Scrapper</span> audits the fraud signals in real time.</p>
+  </section>
+
+  <section class="search-container">
+    <div class="tab-switcher">
+      <button id="urlTabBtn" class="tab-btn active" onclick="switchMode('url')"><i class="fa-solid fa-link"></i> Scan ad URL</button>
+      <button id="textTabBtn" class="tab-btn" onclick="switchMode('text')"><i class="fa-solid fa-quote-left"></i> Paste ad copy / SMS</button>
+
+    </div>
+    <div class="search-bar-form" id="searchBarForm">
+      <div class="input-wrapper">
+        <i id="inputIcon" class="fa-solid fa-link input-icon"></i>
+        <input type="text" id="payloadInput" placeholder="Paste sponsored ad link, landing page URL, or domain..."/>
+      </div>
+      <button id="submitBtn" class="scan-button" onclick="checkLink()">
+        <span id="submitBtnText">Audit ad link</span>
+        <i class="fa-solid fa-shield-halved"></i>
+      </button>
+    </div>
+     <div id="loadingState" class="loader-container hidden">
+      <div class="spinner"></div>
+      <p class="loader-text"><span class="cyan-highlight">ScamShield AI</span> is analysing fraud signals and linguistic patterns...<br><span class="emerald-highlight">Evaluating</span> domain trust, urgency cues, and scam vectors...</p>
+    </div>
+    <div id="errorMsg" class="error-msg hidden"></div>
+  </section>
+
+  <section id="verdictCard" class="verdict-card hidden">
+    <div class="verdict-header">
+      <i id="verdictIcon" class="fa-solid"></i>
+      <h2 id="verdictTitle" class="verdict-title"></h2>
+    </div>
+    <div class="verdict-body">
+      <div class="metrics-row">
+        <div class="metric-badge">
+          <span class="metric-label">Safety score</span>
+          <div id="trustScoreCircle" class="score-circle"><span id="trustScoreValue">0</span><span class="pct">%</span></div>
+        </div>
+        <div class="meta-info">
+          <div class="info-group"><span class="info-label">Scam vector</span><span id="scamType" class="info-value"></span></div>
+          <div class="info-group"><span class="info-label">Urgency threat level</span><div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;"><span id="riskLevel" class="info-value risk-badge"></span><span id="urgencyBadge" class="urgency-badge hidden">🚨 Fake Urgency Detected</span></div></div>
+        </div>
+      </div>
+      <div class="ai-explanation-box">
+        <i class="fa-solid fa-robot" style="position:absolute;right:14px;top:11px;opacity:0.05;font-size:1.4rem;"></i>
+        <p id="reasonLocal" class="reason-text"></p>
+        <div id="flagsList" class="flags-list"></div>
+      </div>
+      <button class="share-btn" onclick="openWhatsApp()"><i class="fa-brands fa-whatsapp"></i> Broadcast alert to family group</button>
+
+      <!-- Cyber Cell Complaint Section -->
+      <div id="complaintSection" class="complaint-section hidden">
+        <div class="complaint-header">
+          <span>📝 Generated Cyber Cell Complaint Draft</span>
+          <button class="copy-complaint-btn" id="copyBtn" onclick="copyComplaint()">
+            <i class="fa-solid fa-copy"></i> Copy Complaint Draft
+          </button>
+        </div>
+        <div id="complaintText" class="complaint-text"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-it-works-section">
+    <button class="hiw-toggle-btn" id="hiwBtn" onclick="toggleHowItWorksInline()">
+      <span style="display:flex;align-items:center;gap:0.6rem;"><i class="fa-solid fa-circle-info" style="color:var(--accent-cyan);"></i> How it works</span>
+      <i class="fa-solid fa-chevron-down arrow"></i>
+    </button>
+    <div class="hiw-content" id="hiwContent">
+
+      <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.25rem;">
+
+        <div class="hiw-step">
+          <div class="hiw-step-num">01</div>
+          <div class="hiw-step-title">Paste your link or suspicious message</div>
+          <div class="hiw-step-desc">Drop a sponsored ad URL, a domain, or paste ad copy / SMS text directly. ScamShield accepts both — no sign-up or account needed.</div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step-num">02</div>
+          <div class="hiw-step-title">AI audits it across multiple threat signals</div>
+          <div class="hiw-step-desc">Our system quietly checks the link and its content against known fraud patterns — fake urgency, brand impersonation, suspicious domains, and more. This happens in seconds, entirely in the background.</div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step-num">03</div>
+          <div class="hiw-step-title">Get a clear verdict — and act on it</div>
+          <div class="hiw-step-desc">A safety score and plain-language explanation tells you exactly what was found. If it's dangerous, a pre-drafted cyber cell complaint is generated for you to file instantly.</div>
+        </div>
+
+      </div>
+
+      <div style="background:rgba(234,179,8,0.07);border:1px solid rgba(234,179,8,0.2);border-radius:10px;padding:0.9rem 1.1rem;display:flex;gap:0.75rem;align-items:flex-start;">
+        <i class="fa-solid fa-lock" style="color:#eab308;margin-top:2px;flex-shrink:0;"></i>
+        <span style="font-size:0.8rem;color:#94a3b8;line-height:1.6;">
+          <strong style="color:#eab308;">Your privacy is protected.</strong> We do not store your scanned links, personal data, or results. The analysis runs on secure infrastructure and nothing you submit is shared or logged.
+        </span>
+      </div>
+
+      <div class="hiw-tech-row" style="margin-top:1.25rem;">
+        <span class="tech-chip">AI Threat Analysis</span>
+        <span class="tech-chip">Real-time Web Intelligence</span>
+        <span class="tech-chip">Scam Pattern Detection</span>
+        <span class="tech-chip">Cyber Cell Integration</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="live-feed-section">
+    <div class="feed-header"><span class="live-dot"></span><span>Active ad threat telemetry stream</span></div>
+    <div class="ticker-wrapper">
+      <div class="ticker-track">
+        <div class="ticker-item threat">⚠️ BLOCKED: Instagram "Free iPhone Giveaway" (Malware Link Dropper)</div>
+        <div class="ticker-item safe">✅ PASSED: Verified Merchant Ad Target (Secure E-Commerce Domain)</div>
+        <div class="ticker-item threat">⚠️ BLOCKED: Deepfake Celebrity Crypto Investment Ad (Financial Fraud)</div>
+        <div class="ticker-item safe">✅ PASSED: Official Government Utility Notification Link (Safe)</div>
+        <div class="ticker-item threat">⚠️ BLOCKED: WhatsApp "Win a Car" Forwarded Link (Phishing)</div>
+        <div class="ticker-item safe">✅ PASSED: Verified E-Commerce Flash Sale (Authenticated Domain)</div>
+        <div class="ticker-item threat">⚠️ BLOCKED: Instagram "Free iPhone Giveaway" (Malware Link Dropper)</div>
+        <div class="ticker-item safe">✅ PASSED: Verified Merchant Ad Target (Secure E-Commerce Domain)</div>
+        <div class="ticker-item threat">⚠️ BLOCKED: Deepfake Celebrity Crypto Investment Ad (Financial Fraud)</div>
+        <div class="ticker-item safe">✅ PASSED: Official Government Utility Notification Link (Safe)</div>
+        <div class="ticker-item threat">⚠️ BLOCKED: WhatsApp "Win a Car" Forwarded Link (Phishing)</div>
+        <div class="ticker-item safe">✅ PASSED: Verified E-Commerce Flash Sale (Authenticated Domain)</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="footer-toggle-bar" id="footerToggleBar" onclick="toggleFooterContent()">
+  <span class="footer-toggle-label"><i class="fa-solid fa-book-open"></i> User guide</span>
+  <i class="fa-solid fa-chevron-up footer-toggle-arrow" id="footerArrow"></i>
+</div>
+<div class="footer-panel" id="footerPanel">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-col-title">How to use ScamShield</div>
+        <div class="guide-steps">
+          <div class="guide-step"><div class="guide-step-num">1</div><div class="guide-step-text">Choose "Scan ad URL" for links or "Paste ad copy / SMS" for text messages.</div></div>
+          <div class="guide-step"><div class="guide-step-num">2</div><div class="guide-step-text">Paste the suspicious link, domain, or message text into the input bar.</div></div>
+          <div class="guide-step"><div class="guide-step-num">3</div><div class="guide-step-text">Hit "Audit ad link" — results appear within a few seconds.</div></div>
+          <div class="guide-step"><div class="guide-step-num">4</div><div class="guide-step-text">Read the safety score and flags. Red = danger. Green = safe. Yellow = caution.</div></div>
+          <div class="guide-step"><div class="guide-step-num">5</div><div class="guide-step-text">Tap "Broadcast alert" to share the result on WhatsApp with your contacts.</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Tips for best results</div>
+        <div class="guide-tips">
+          <div class="guide-tip"><i class="fa-solid fa-circle-check"></i><span>Always paste the full URL including https:// — shortened links (bit.ly etc.) can also be scanned.</span></div>
+          <div class="guide-tip"><i class="fa-solid fa-circle-check"></i><span>For SMS scams, paste the entire message text including any urgency phrases for the most accurate analysis.</span></div>
+          <div class="guide-tip"><i class="fa-solid fa-circle-check"></i><span>A score below 30 is a strong scam signal. Scores above 80 indicate a clean verified source.</span></div>
+          <div class="guide-tip"><i class="fa-solid fa-circle-check"></i><span>Never click a link you're unsure about — paste it here first and let the AI check it safely.</span></div>
+          <div class="guide-tip"><i class="fa-solid fa-circle-check"></i><span>Your scan history is saved locally in this session so you can review past results from the dashboard.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">ScamShield AI — Anakin Blitz V2 &nbsp;·&nbsp; Built for public safety</div>
+  </div>
+</div>
+</body>
+
+<script>
+// ── Backend config — change this after deployment ────────────────────────────
+const BACKEND_URL = window.SCAMSHIELD_BACKEND || 'http://127.0.0.1:5000';
+// ─────────────────────────────────────────────────────────────────────────────
+
+let pipelineMode='url';
+let lastPayload='';
+let lastVerdict=null;
+let scanHistory=[];
+let dashOpen=false;
+let footerOpen=false;
+let hiwMode=false;
+
+document.addEventListener('click',function(e){
+  const menu=document.getElementById('dropdownMenu');
+  const btn=document.getElementById('dotsBtn');
+  if(menu.classList.contains('open')&&!menu.contains(e.target)&&!btn.contains(e.target)){
+    menu.classList.remove('open');
+  }
+});
+
+function toggleDropdown(){
+  document.getElementById('dropdownMenu').classList.toggle('open');
+}
+
+function openDashboard(){
+  document.getElementById('dropdownMenu').classList.remove('open');
+  const panel=document.getElementById('dashboardPanel');
+  const isOpen=panel.classList.contains('open');
+  if(!isOpen){panel.classList.add('open');dashOpen=true;renderHistory();}
+  else{panel.classList.remove('open');dashOpen=false;}
+}
+
+function closeDashboard(){
+  dashOpen=false;
+  document.getElementById('dashboardPanel').classList.remove('open');
+}
+
+function toggleHowItWorks(){
+  document.getElementById('dropdownMenu').classList.remove('open');
+  const content=document.getElementById('hiwContent');
+  const wasOpen=content.classList.contains('open');
+  toggleHowItWorksInline();
+  if(!wasOpen){
+    setTimeout(()=>{document.getElementById('hiwBtn').scrollIntoView({behavior:'smooth',block:'start'});},50);
+  }
+}
+
+function toggleHowItWorksInline(){
+  const content=document.getElementById('hiwContent');
+  const btn=document.getElementById('hiwBtn');
+  const isOpen=content.classList.contains('open');
+  if(!isOpen){
+    hiwMode=true;
+    content.classList.add('open');
+    btn.classList.add('open');
+  } else {
+    hiwMode=false;
+    content.classList.remove('open');
+    btn.classList.remove('open');
+  }
+}
+
+function toggleFooter(){
+  document.getElementById('dropdownMenu').classList.remove('open');
+  const wasOpen=footerOpen;
+  toggleFooterContent();
+  if(!wasOpen){
+    setTimeout(()=>{document.getElementById('footerToggleBar').scrollIntoView({behavior:'smooth',block:'start'});},50);
+  }
+}
+
+function toggleFooterContent(){
+  const panel=document.getElementById('footerPanel');
+  const arrow=document.getElementById('footerArrow');
+  footerOpen=!footerOpen;
+  if(footerOpen){panel.classList.add('open');arrow.classList.add('open');}
+  else{panel.classList.remove('open');arrow.classList.remove('open');}
+}
+
+function switchMode(mode){
+  pipelineMode=mode;
+  const inputField=document.getElementById('payloadInput');
+  const inputIcon=document.getElementById('inputIcon');
+  const submitBtnText=document.getElementById('submitBtnText');
+
+  document.getElementById('urlTabBtn').classList.remove('active');
+  document.getElementById('textTabBtn').classList.remove('active');
+
+  if(mode==='text'){
+    document.getElementById('textTabBtn').classList.add('active');
+    inputField.placeholder='Paste the raw ad copy, SMS text, or social media headline...';
+    inputIcon.className='fa-solid fa-quote-left input-icon';
+    submitBtnText.innerText='Audit ad text';
+  } else {
+    document.getElementById('urlTabBtn').classList.add('active');
+    inputField.placeholder='Paste sponsored ad link, landing page URL, or domain...';
+    inputIcon.className='fa-solid fa-link input-icon';
+    submitBtnText.innerText='Audit ad link';
+  }
+}
+
+document.getElementById('payloadInput').addEventListener('keydown',(e)=>{
+  if(e.key==='Enter') checkLink();
+});
+
+function showInputError(msg){
+  const errorMsg=document.getElementById('errorMsg');
+  const payloadInput=document.getElementById('payloadInput');
+  errorMsg.textContent=msg;
+  errorMsg.classList.remove('hidden');
+  payloadInput.focus();
+  setTimeout(()=>errorMsg.classList.add('hidden'), 4000);
+}
+
+async function checkLink(){
+  const payloadInput=document.getElementById('payloadInput');
+  const submitBtn=document.getElementById('submitBtn');
+  const loadingState=document.getElementById('loadingState');
+  const verdictCard=document.getElementById('verdictCard');
+  const errorMsg=document.getElementById('errorMsg');
+  const rawPayload=payloadInput.value.trim();
+
+  if(!rawPayload){
+    payloadInput.focus();
+    showInputError('Please enter a URL or ad text to scan.');
+    return;
+  }
+
+  // Input validation — wrong tab detection
+  const looksLikeUrl = /^https?:\/\//i.test(rawPayload) || /^www\./i.test(rawPayload) || /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/|$)/.test(rawPayload);
+
+  if(pipelineMode === 'url' && !looksLikeUrl){
+    showInputError('⚠️ This looks like text, not a URL. Please switch to "Paste ad copy / SMS" tab to scan text messages.');
+    return;
+  }
+
+  if(pipelineMode === 'text' && looksLikeUrl && rawPayload.length < 100){
+    showInputError('⚠️ This looks like a URL. Please switch to "Scan ad URL" tab to scan links.');
+    return;
+  }
+
+  // Meaningless / random text detection
+  function isMeaningless(text){
+    if(text.length < 8) return true;
+    // Check word count — real ad copy has multiple words
+    const words = text.trim().split(/\s+/);
+    if(words.length < 3) return true;
+    // Check consonant cluster ratio — random text has too many consonants in a row
+    const consonantRun = text.match(/[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]{5,}/g);
+    if(consonantRun && consonantRun.length > 0) return true;
+    // Check if it has at least one real-looking word (4+ chars)
+    const hasRealWord = words.some(w => w.length >= 4 && /[aeiou]/i.test(w));
+    if(!hasRealWord) return true;
+    return false;
+  }
+
+  if(pipelineMode === 'text' && isMeaningless(rawPayload)){
+    showInputError("🤔 I don't understand this. Please paste a real ad text, SMS, or suspicious message to scan.");
+    return;
+  }
+
+  lastPayload=rawPayload;
+  submitBtn.disabled=true;
+  verdictCard.className='verdict-card hidden';
+  errorMsg.classList.add('hidden');
+  loadingState.classList.remove('hidden');
+
+  try{
+    // Dispatch to Flask backend
+    const response=await fetch(BACKEND_URL+'/scan',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({url:rawPayload, mode:pipelineMode})
+    });
+
+    if(!response.ok) throw new Error(`HTTP network error! Status: ${response.status}`);
+
+    const data=await response.json();
+    console.log('Response payload acquired from Anakin API:',data);
+
+    // Update state variable for dashboard tasks
+    lastVerdict={result:data,rawPayload};
+
+    const entry={payload:rawPayload,score:data.trust_score,risk:data.risk_level,type:data.scam_type,time:new Date()};
+    scanHistory.unshift(entry);
+    updateStats();
+    if(dashOpen) renderHistory();
+    renderVerdict(data,rawPayload);
+
+  }catch(err){
+    console.error('Critical dashboard runtime exception encountered:',err);
+    loadingState.classList.add('hidden');
+    submitBtn.disabled=false;
+    errorMsg.textContent='Unable to communicate with the core engine. Make sure the backend server is running.';
+    errorMsg.classList.remove('hidden');
+  }finally{
+    loadingState.classList.add('hidden');
+  }
+}
+
+function renderVerdict(data,rawPayload){
+  document.getElementById('loadingState').classList.add('hidden');
+  document.getElementById('submitBtn').disabled=false;
+  const trustScore=Math.max(0,Math.min(100,parseInt(data.trust_score)||0));
+  const isThreaten=data.risk_level==='high';
+  const isMedium=data.risk_level==='medium';
+  document.getElementById('trustScoreValue').innerText=trustScore;
+  document.getElementById('scamType').innerText=data.scam_type||'Unknown';
+  document.getElementById('reasonLocal').innerText=data.reason||'';
+  const riskEl=document.getElementById('riskLevel');
+  riskEl.innerText=(data.risk_level||'low').toUpperCase();
+  riskEl.className='info-value risk-badge '+(isThreaten?'risk-high':isMedium?'risk-medium':'risk-low');
+
+  // Fake Urgency Badge
+  const urgencyBadge=document.getElementById('urgencyBadge');
+  if(data.fake_urgency_detected===true){
+    urgencyBadge.classList.remove('hidden');
+  } else {
+    urgencyBadge.classList.add('hidden');
+  }
+
+  // Cyber Cell Complaint
+  const complaintSection=document.getElementById('complaintSection');
+  const complaintText=document.getElementById('complaintText');
+  const copyBtn=document.getElementById('copyBtn');
+  if(data.is_scam===true || data.risk_level==='high'){
+    const draft=data.cyber_complaint_draft||'No complaint draft generated.';
+    complaintText.textContent=draft;
+    complaintSection.classList.remove('hidden');
+    copyBtn.innerHTML='<i class="fa-solid fa-copy"></i> Copy Complaint Draft';
+  } else {
+    complaintSection.classList.add('hidden');
+  }
+  const flagsList=document.getElementById('flagsList');
+  flagsList.innerHTML='';
+  if(Array.isArray(data.flags)){
+    data.flags.forEach(f=>{
+      const div=document.createElement('div');div.className='flag-item';
+      const icon=document.createElement('i');
+      icon.className=f.type==='threat'?'fa-solid fa-triangle-exclamation flag-threat':'fa-solid fa-circle-check flag-safe';
+      const span=document.createElement('span');span.textContent=f.label;
+      div.appendChild(icon);div.appendChild(span);flagsList.appendChild(div);
+    });
+  }
+  const verdictCard=document.getElementById('verdictCard');
+  const verdictTitle=document.getElementById('verdictTitle');
+  const verdictIcon=document.getElementById('verdictIcon');
+  const scoreCircle=document.getElementById('trustScoreCircle');
+  verdictCard.className='verdict-card';
+  verdictIcon.style.color='';
+  if(isThreaten){
+    verdictCard.classList.add('threat-detected');
+    verdictTitle.innerText='Malicious ad signature detected';
+    verdictIcon.className='fa-solid fa-shield-virus verdict-icon-threat';
+    scoreCircle.style.borderColor='#ef4444';
+  } else if(isMedium){
+    verdictCard.style.border='2px solid rgba(234,179,8,0.4)';
+    verdictTitle.innerText='Suspicious — proceed with caution';
+    verdictIcon.className='fa-solid fa-triangle-exclamation';
+    verdictIcon.style.color='#eab308';
+    scoreCircle.style.borderColor='#eab308';
+  } else {
+    verdictCard.classList.add('verification-passed');
+    verdictTitle.innerText='Clean — safe ad verification passed';
+    verdictIcon.className='fa-solid fa-circle-check verdict-icon-safe';
+    scoreCircle.style.borderColor='#10b981';
+  }
+  verdictCard.classList.remove('hidden');
+}
+
+function updateStats(){
+  const threats=scanHistory.filter(s=>s.risk==='high').length;
+  const safe=scanHistory.filter(s=>s.risk==='low').length;
+  document.getElementById('statTotal').innerText=scanHistory.length;
+  document.getElementById('statThreats').innerText=threats;
+  document.getElementById('statSafe').innerText=safe;
+}
+
+function renderHistory(){
+  const list=document.getElementById('historyList');
+  if(scanHistory.length===0){
+    list.innerHTML='<div class="empty-history"><i class="fa-solid fa-shield-halved"></i>No scans yet — paste a link above to get started.</div>';
+    return;
+  }
+  list.innerHTML=scanHistory.slice(0,15).map(item=>{
+    const isT=item.risk==='high';
+    const icon=isT?'fa-solid fa-triangle-exclamation t':'fa-solid fa-circle-check s';
+    const scoreColor=isT?'red':'green';
+    const mins=Math.floor((Date.now()-item.time)/60000);
+    const timeStr=mins<1?'just now':mins+'m ago';
+    return `<div class="history-item"><i class="${icon} history-icon"></i><span class="history-payload" title="${item.payload}">${item.payload}</span><span class="history-score ${scoreColor}">${item.score}%</span><span class="history-time">${timeStr}</span></div>`;
+  }).join('');
+}
+
+function copyComplaint(){
+  const text=document.getElementById('complaintText').textContent;
+  const btn=document.getElementById('copyBtn');
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.innerHTML='<i class="fa-solid fa-check"></i> Copied!';
+    setTimeout(()=>{btn.innerHTML='<i class="fa-solid fa-copy"></i> Copy Complaint Draft';},2500);
+  }).catch(()=>{
+    btn.innerHTML='<i class="fa-solid fa-xmark"></i> Failed';
+    setTimeout(()=>{btn.innerHTML='<i class="fa-solid fa-copy"></i> Copy Complaint Draft';},2000);
+  });
+}
+
+function openWhatsApp(){
+  if(!lastVerdict) return;
+  const{result,rawPayload}=lastVerdict;
+  const verdict=result.risk_level==='high'?'🔴 DANGEROUS':result.risk_level==='medium'?'🟡 SUSPICIOUS':'✅ SECURE';
+  const text=`🛡️ ScamShield AI Alert\n\nTarget: ${rawPayload}\nVerdict: ${verdict}\nSafety Score: ${result.trust_score}/100\nType: ${result.scam_type}\n\nAnalysis: ${result.reason}`;
+  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+
+// ── Theme System ─────────────────────────────────────────────────────────────
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('themeIcon').textContent = theme === 'dark' ? '☀️' : '🌙';
+  try { localStorage.setItem('scamshield-theme', theme); } catch(e){}
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+}
+
+(function initTheme() {
+  let saved;
+  try { saved = localStorage.getItem('scamshield-theme'); } catch(e){}
+  if (saved === 'light' || saved === 'dark') {
+    applyTheme(saved);
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark ? 'dark' : 'light');
+  }
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    let saved2;
+    try { saved2 = localStorage.getItem('scamshield-theme'); } catch(e2){}
+    if (!saved2) applyTheme(e.matches ? 'dark' : 'light');
+  });
+})();
+</script>
+</html>
