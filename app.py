@@ -2,7 +2,7 @@ import os
 import re
 import requests
 from concurrent.futures import ThreadPoolExecutor
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 
@@ -271,7 +271,11 @@ def build_verdict(url, page_text, reputation_text, wire_ai_result, mode):
 
 @app.route('/')
 def home():
-    return jsonify({"status": "healthy", "powered_by": "Anakin Wire + Search API"})
+    return send_from_directory('.', 'homepage.html')
+
+@app.route('/Styles.css')
+def styles():
+    return send_from_directory('.', 'Styles.css')
 
 
 @app.route('/scan', methods=['POST'])
