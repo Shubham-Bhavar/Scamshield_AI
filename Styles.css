@@ -225,3 +225,10 @@ body{background:var(--bg-main);color:var(--text-primary);font-family:var(--font-
   :root:not([data-theme="dark"]) .hiw-step{background:var(--hiw-step-bg);}
   :root:not([data-theme="dark"]) .live-feed-section{background:var(--ticker-section-bg);}
 }
+
+.complaint-section{margin-top:1.25rem;background:rgba(234,179,8,0.05);border:1px solid rgba(234,179,8,0.25);border-radius:12px;overflow:hidden;}
+.complaint-header{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;background:rgba(234,179,8,0.08);border-bottom:1px solid rgba(234,179,8,0.2);font-size:0.85rem;font-weight:700;color:#eab308;}
+.complaint-text{padding:1rem 1.25rem;font-size:0.82rem;color:var(--reason-text);line-height:1.8;white-space:pre-wrap;font-family:var(--font-sans);}
+.copy-complaint-btn{background:rgba(234,179,8,0.15);border:1px solid rgba(234,179,8,0.35);color:#eab308;padding:0.35rem 0.85rem;border-radius:6px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:var(--font-sans);display:flex;align-items:center;gap:0.4rem;}
+.copy-complaint-btn:hover{background:rgba(234,179,8,0.25);}
+.urgency-badge{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.72rem;font-weight:700;}
